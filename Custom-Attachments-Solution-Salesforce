@@ -1,0 +1,207 @@
+<apex:page   id="pg">
+    <apex:form id="thefrm">
+       
+        <apex:outputPanel rendered="{!if($CurrentPage.parameters.type='a',true,false)}" id="attachments">
+            <div class="genericPageBlockTable">
+                <table id="attachmentsTable">
+                    <tbody >
+                        <tr>
+                            <td><strong>1.</strong></td><td><strong>Select the File</strong></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td><td>Type the path of the file or click the Browse button to find the file.</td>
+                        </tr>
+                        <tr >
+                            <td>&nbsp;</td><td>
+                            <input type="file" id="fileToUpload" onChange="fileSelected()" fileName="{!filename}"/>
+                             
+                             </td> 
+                        </tr>
+                        
+                        <tr>
+                            <td>&nbsp;</td>
+                                <td style="padding-top: .5em;">File Contents:&nbsp;&nbsp;
+                                    <apex:selectList size="1" title="Type" value="{!filecontents}" id="filecontents" label="Type">
+                                        <apex:selectOptions value="{!types}"/>
+                                    </apex:selectList>                    
+                                    
+                                    </td>
+
+                        </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                        <td >Description: &nbsp; &nbsp;&nbsp;&nbsp;
+                        <apex:inputTextArea value="{!filedescription}" style=" width: 300px" id="filedescription1"/>                
+                        </td>
+
+                        </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                                                <td style="padding-bottom: 1em;">Private: &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <apex:inputCheckbox value="{!internal}" id="attachmentinternal"/>
+                        </td>
+                        </tr>                        
+                        <tr>
+                            <td><strong>2.</strong></td><td><strong>Click the "Attach File" button.</strong></td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td><td>Repeat steps 1 and 2 to attach multiple files.</td>
+                        </tr>
+                        <tr>
+                            <td>&nbsp;</td><td>( When the upload is complete the file information will appear below. )</td>
+                        </tr>
+                        <tr>
+
+                            <td>&nbsp;</td><td><apex:outputPanel id="test"><apex:commandButton title="Attach File (New Window)" value="Attach File" id="Attach" onClick="uploadFile()" reRender="result">
+                               
+                            </apex:commandButton></apex:outputPanel></td>
+                        
+                        </tr>
+
+                    </tbody>
+                </table>
+            </div>
+        </apex:outputPanel>
+        <apex:outputPanel rendered="{!if($CurrentPage.parameters.type='a',true,false)}">
+    <table class="fileUploadTableBottom"><tbody><tr><td><strong>3.</strong></td><td><strong>Click the Done button to return to the previous page.</strong></td></tr>
+
+    <tr><td>&nbsp;</td><td><apex:commandButton action="{!Done}" value=" Done " title="Done"/></td></tr>
+    </tbody></table>
+    </apex:outputPanel>
+    
+</apex:form> 
+
+        <!--<apex:actionStatus id="status">-->
+            <!--<apex:facet name="start">
+                Filename2 {!filename}
+                <apex:pageBlock title="Uploading">
+                    <center>                            <img class="waitingImage" src="/img/loading.gif" title="Please Wait..." />
+                            <span class="waitingDescription">Refreshing...</span></center>
+                </apex:pageBlock>       
+            </apex:facet>-->
+            <!--<apex:facet name="stop">-->
+                <apex:form >
+                    <apex:outputpanel id="result" >
+                    <apex:outputPanel rendered="{!if(filename != '',true,false)}"> <!---->
+                    <div id="ep" class="bPageBlock brandSecondaryBrd secondaryPalette">
+                        <div class="pbHeader pbHeaderEmpty">
+                            <table cellspacing="0" cellpadding="0" border="0">
+                                <tbody>
+                                    <tr>
+                                        <td class="pbTitle">
+                                            <img width="12" height="1" style="margin-right: 0.25em;margin-right: 0.25em;margin-right: 0.25em;" title="" class="minWidth" alt="" src="/s.gif"/><h2 class="mainTitle"></h2>
+                                        </td>
+                                        <td id="topButtonRow" class="pbButton">&nbsp;
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pbBody">
+                            <div id="head_1_ep" class="pbSubheader brandTertiaryBrd brandTertiaryBgr first tertiaryPalette"><h3>You have just uploaded the following file<span class="titleSeparatingColon">:</span></h3></div>
+                            <div class="pbSubsection">
+                                <table cellspacing="0" cellpadding="0" border="0" class="detailList">
+                                    <tbody>
+                                        <tr>
+                                            <td class="labelCol" > File Name</td><td colspan="3" class="data2Col">{!filename}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="labelCol last" >Size</td><td colspan="3" class="data2Col last">{!filesize} bytes</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="pbFooter secondaryPalette"><div class="bg"></div></div></div>
+                    </apex:outputpanel>    
+</apex:outputPanel>
+                </apex:form>
+            <!--</apex:facet>
+        </apex:actionStatus>-->
+
+<apex:includeScript value="/soap/ajax/28.0/connection.js"/> 
+<script type="text/javascript">
+    var file = document.getElementById('fileToUpload').files[0];
+        
+    function fileSelected() {
+        
+            var file = document.getElementById('fileToUpload').files[0];
+                        
+            if (file) {
+                
+                if (file.size > (25 * 1024 * 1024)) {
+                    alert('File too large, greater than 25MB');
+                    return;
+                }
+                if (file.size > 1024 * 1024){
+                    fileSize = (Math.round(file.size * 100 / (1024 * 1024)) / 100).toString() + 'MB';
+                    alert(fileSize);
+                }
+                else {
+                    fileSize = (Math.round(file.size * 100 / 1024) / 100).toString() + 'KB';
+                    alert(fileSize);
+                }
+            }
+        }
+
+        function uploadFile() {
+           
+            alert('upload file in progress ' +fileSize);
+            var file = document.getElementById('fileToUpload').files[0];
+            var reader = new FileReader();
+            reader.onload = loaded;
+            reader.onerror = errorHandler;
+            reader.readAsDataURL(file); 
+                 
+        }
+
+        function loaded(evt) {
+            var file = document.getElementById('fileToUpload').files[0];
+            alert("loading "+file.size);
+            var parentId = '{!$CurrentPage.parameters.pid}';
+            var filename = file.name;
+            var fileType = file.type;
+            var filesize = file.size;
+            var fileContent = evt.target.result;
+            var filedescriptionjs = document.getElementById('{!$Component.pg.thefrm.filedescription1}').value;
+            var filetypejs = document.getElementById('{!$Component.pg.thefrm.filecontents}').value;            
+
+            uploadAttachment(fileContent,filename,parentId,filedescriptionjs,filetypejs);
+                 
+        }
+
+        function errorHandler(evt) {
+            if (evt.target.error.name == 'NotReadableError') {
+                alert('File could not be read');
+            }
+            else {
+                alert(evt.target.error);
+            }
+        }
+        function uploadAttachment(filecontent, filename, parentId, filedescription, filetype) {
+            debugger;
+            sforce.connection.sessionId = '{!$Api.Session_ID}';
+            var attachment         = new sforce.SObject('Attachment');
+            attachment.Name        = filename;
+            attachment.IsPrivate   = document.getElementById('{!$Component.pg.thefrm.attachmentinternal}').checked;
+            attachment.ContentType = filetype;
+            attachment.Body        = filecontent;
+            attachment.Description = filedescription;
+            attachment.ParentId    = '{!$CurrentPage.parameters.pid}';
+            var result = sforce.connection.create([attachment]);
+           
+            var Id = result[0].id;
+          
+            if (result[0].getBoolean("success")) {
+             alert("new attachment created with id " + result[0].id);
+
+              addAttachmentfromjs(result[0].id,filedescription,filetype);
+            } else {
+              alert("failed to create attachment " + result[0]);
+            }
+           
+        }   
+</script>
+
+
+</apex:page>
